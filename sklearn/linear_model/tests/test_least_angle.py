@@ -469,6 +469,29 @@ def test_lasso_lars_ic():
     assert_raises(ValueError, lars_broken.fit, X, y)
 
 
+def test_lasso_lars_ic_copy_x():
+    # Test that copy_X parameter behavior is consistent between
+    # constructor and fit method
+    X, y = diabetes.data[:50], diabetes.target[:50]  # Use smaller dataset for speed
+    
+    # Test 1: When copy_X=None in fit, should use constructor value
+    lars_false = linear_model.LassoLarsIC(copy_X=False)
+    lars_true = linear_model.LassoLarsIC(copy_X=True)
+    
+    # Both should work when fit is called with copy_X=None (default)
+    lars_false.fit(X, y)
+    lars_true.fit(X, y)
+    
+    # Test 2: When copy_X is explicitly provided to fit, it should override
+    lars_override = linear_model.LassoLarsIC(copy_X=False)
+    lars_override.fit(X, y, copy_X=True)  # Should work despite constructor
+    
+    # Test 3: Constructor setting should be preserved
+    assert_equal(lars_false.copy_X, False)
+    assert_equal(lars_true.copy_X, True)
+    assert_equal(lars_override.copy_X, False)  # Constructor value unchanged
+
+
 def test_lars_path_readonly_data():
     # When using automated memory mapping on large input, the
     # fold data is in read-only mode
